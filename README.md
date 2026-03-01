@@ -23,13 +23,13 @@ This project fetches **live market data** for a given ticker (e.g. AAPL), retrie
 ## 📸 Visualizations
 
 ### Volatility Smile
-![Volatility Smile](images/smile.png)
+![Volatility Smile](image/smile.png)
 
 ### Monte Carlo Paths
-![Monte Carlo Paths](images/mc_paths.png)
+![Monte Carlo Paths](image/mc_paths.png)
 
 ### 3D Greeks Surfaces
-![3D Greeks Surfaces](images/greeks_3d.png)
+![3D Greeks Surfaces](image/greeks_3d.png)
 
 
 ##  Project Structure
