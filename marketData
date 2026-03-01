@@ -1,0 +1,49 @@
+import yfinance as yf
+import pandas as pd
+from datetime import datetime
+
+def get_real_market_options(ticker_symbol):
+    tk = yf.Ticker(ticker_symbol)
+    
+    expirations = tk.options
+    if not expirations:
+        return None
+    
+    target_date = expirations[1]
+    opt_chain = tk.option_chain(target_date)
+    calls = opt_chain.calls
+    
+    spot = tk.history(period="1d")['Close'].iloc[-1]
+    
+    calls['diff'] = abs(calls['strike'] - spot)
+    best_match = calls.sort_values('diff').iloc[0]
+    
+    bid = best_match['bid']
+    ask = best_match['ask']
+    market_price = (bid + ask) / 2
+    strike = best_match['strike']
+    implied_vol = best_match['impliedVolatility']
+    
+    # T dynamique
+    today = datetime.today()
+    expiry_date = datetime.strptime(target_date, "%Y-%m-%d")
+    T = max((expiry_date - today).days, 1) / 365  # min 1 jour pour éviter T=0
+    
+    return spot, strike, market_price, implied_vol, target_date, T
+
+def get_iv_smile(ticker_symbol):
+    tk = yf.Ticker(ticker_symbol)
+    
+    expirations = tk.options
+    if not expirations:
+        return None
+    
+    target_date = expirations[1]  # même expiration que ton analyse
+    opt_chain = tk.option_chain(target_date)
+    calls = opt_chain.calls
+    
+    # On garde strike et IV, on filtre les valeurs manquantes
+    smile = calls[['strike', 'impliedVolatility']].dropna()
+    smile = smile[smile['impliedVolatility'] > 0]
+    
+    return smile
