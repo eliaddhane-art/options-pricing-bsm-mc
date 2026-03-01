@@ -6,6 +6,24 @@ A Python project that prices real equity options using the **Black-Scholes-Merto
 
 This project fetches **live market data** for a given ticker (e.g. AAPL), retrieves the nearest at-the-money call option, and compares the **theoretical BSM price** against the **real market price**. It also runs a **Monte Carlo simulation** to validate the BSM result and exposes the model's core limitation through the **volatility smile**.
 
+##  Model Limitations
+
+- **Constant volatility** — BSM assumes σ is constant across strikes and time, which the volatility smile directly contradicts
+- **Simplistic volatility smile** — the smile displayed here is derived from yfinance implied volatilities which can be noisy (stale prices, low liquidity on OTM strikes). A proper smile would use bid/ask midpoints and filter illiquid strikes
+- **No jumps** — the model assumes continuous price movements; in reality, stocks can gap (earnings, news)
+- **European options only** — BSM cannot price American options which can be exercised early
+- **Dividends** — only a continuous dividend yield approximation is used; discrete dividends are not modeled
+- **Constant risk-free rate** — r is assumed fixed over the life of the option
+
+##  Model vs. Market Price Gap
+
+BSM and Monte Carlo both price the AAPL call at ~2.26$ vs. a market price of ~2.88$ — a gap of ~22%. This is expected and explained by several factors:
+
+- **Volatility smile** — BSM uses a single IV for all strikes; the market prices each strike differently
+- **Liquidity premium** — market makers charge a spread; `lastPrice` may reflect a trade from hours ago
+- **Jump risk** — the market prices in the possibility of sudden moves that BSM ignores
+- **Demand for protection** — OTM puts (and by put-call parity, calls) carry a risk premium that BSM does not capture
+
 ## Features
 
 - **Live data** via `yfinance` — real spot price, strike, implied volatility, and expiry
@@ -64,3 +82,5 @@ BSM and Monte Carlo converge to the same price (~2.26$), yet both **underestimat
 - [NumPy](https://numpy.org/)
 - [SciPy](https://scipy.org/)
 - [Matplotlib](https://matplotlib.org/)
+
+
