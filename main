@@ -1,0 +1,50 @@
+import marketData
+import viz
+import engine
+
+def run_full_analysis(ticker):
+    print(f"--- DÉBUT DE L'ANALYSE POUR {ticker} ---")
+    
+    result = marketData.get_real_market_options(ticker)
+    
+    if result and not isinstance(result, str):
+        spot, strike, market_p, iv, expiry, T = result
+        
+        r = 0.04
+        
+        theo_p = engine.bsm_call_price(spot, strike, T, r, iv, q=0.005)
+        mc_p = engine.monte_carlo_call(spot, strike, T, r, iv)
+        delta = engine.bsm_delta(spot, strike, T, r, iv)
+        gamma = engine.bsm_gamma(spot, strike, T, r, iv)
+        theta = engine.bsm_theta(spot, strike, T, r, iv)
+
+        print("-" * 30)
+        print(f"ANALYSE : {ticker}")
+        print(f"Spot: {spot:.2f}$ | Strike: {strike}$ | IV: {iv:.2%}")
+        print(f"T: {T*365:.0f} jours jusqu'à expiration")
+        print(f"Prix Marché: {market_p:.2f}$ | BSM: {theo_p:.2f}$ | Monte Carlo: {mc_p:.2f}$")
+        print("-" * 30)
+        print(f"DELTA : {delta:.4f} (Sensibilité au prix)")
+        print(f"GAMMA : {gamma:.4f} (Instabilité du Delta)")
+        print(f"THETA : {theta:.4f} (Perte par jour)")
+        print("-" * 30)
+
+        print("Génération des surfaces 3D...")
+        S_grid, Vol_grid, P_surf, D_surf, G_surf, T_surf = viz.generate_3d_data_custom(spot, strike, T, r)
+        viz.plot_multi_greeks(S_grid, Vol_grid, P_surf, D_surf, G_surf, T_surf)
+
+        # Volatility Smile
+        smile_data = marketData.get_iv_smile(ticker)
+        if smile_data is not None:
+            print("Génération du Volatility Smile...")
+            viz.plot_smile(smile_data, spot)
+            print("Génération de la simulation Monte Carlo...")
+            viz.plot_payoff_distribution(spot, strike, T, r, iv)
+            viz.plot_mc_paths(spot, strike, T, r, iv)    
+        
+        print(f"--- ANALYSE TERMINÉE ---")
+    else:
+        print(f"Erreur : Impossible de récupérer les données pour {ticker}")
+
+if __name__ == "__main__":
+    run_full_analysis("AAPL")
