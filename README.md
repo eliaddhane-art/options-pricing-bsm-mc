@@ -20,6 +20,18 @@ This project fetches **live market data** for a given ticker (e.g. AAPL), retrie
 - **Monte Carlo Simulation** — 10,000 simulated paths to validate BSM pricing
 
 ---
+## 📸 Visualizations
+
+![Volatility smile](images/smile.png)
+![Monte Carlo Paths](images/mc_paths.png)
+![3D Greeks Surfaces](images/greeks_3d.png)
+
+
+
+
+
+
+
 
 ##  Project Structure
 
