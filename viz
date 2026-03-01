@@ -1,0 +1,90 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from engine import bsm_call_price, bsm_delta, bsm_gamma, bsm_theta
+
+def generate_3d_data_custom(current_spot, strike, T, r):
+    S_space = np.linspace(current_spot * 0.8, current_spot * 1.2, 25)
+    vol_space = np.linspace(0.05, 0.5, 25)
+    S_grid, Vol_grid = np.meshgrid(S_space, vol_space)
+    P_surf = bsm_call_price(S_grid, strike, T, r, Vol_grid)
+    D_surf = bsm_delta(S_grid, strike, T, r, Vol_grid)
+    G_surf = bsm_gamma(S_grid, strike, T, r, Vol_grid)
+    T_surf = bsm_theta(S_grid, strike, T, r, Vol_grid)
+    return S_grid, Vol_grid, P_surf, D_surf, G_surf, T_surf
+
+def plot_multi_greeks(S, Vol, Price, Delta, Gamma, Theta):
+    fig = plt.figure(figsize=(15, 10))
+    surfaces = [
+        (Price, "Option Price", 1),
+        (Delta, "Delta (Δ)", 2),
+        (Gamma, "Gamma (Γ)", 3),
+        (Theta, "Theta (Θ)", 4)
+    ]
+    for data, title, idx in surfaces:
+        ax = fig.add_subplot(2, 2, idx, projection='3d')
+        surf = ax.plot_surface(S, Vol, data, cmap='viridis', edgecolor='none')
+        ax.set_title(title)
+        ax.set_xlabel('Stock Price')
+        ax.set_ylabel('Volatility')
+        ax.set_zlabel(title)
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
+    plt.tight_layout()
+    plt.show()
+
+def plot_smile(smile_data, spot):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(smile_data['strike'], smile_data['impliedVolatility'] * 100,
+            color='royalblue', linewidth=2, marker='o', markersize=4)
+    ax.axvline(x=spot, color='red', linestyle='--', label=f'Spot ({spot:.2f}$)')
+    ax.set_title('Volatility Smile', fontsize=14)
+    ax.set_xlabel('Strike ($)')
+    ax.set_ylabel('Implied Volatility (%)')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+def plot_payoff_distribution(S, K, T, r, sigma, n_paths=10000):
+    Z = np.random.standard_normal(n_paths)
+    ST_all = S * np.exp((r - 0.5 * sigma**2) * T + sigma * np.sqrt(T) * Z)
+    payoffs = np.maximum(ST_all - K, 0)
+    prix_mc = np.exp(-r * T) * np.mean(payoffs)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.hist(payoffs, bins=50, color='royalblue', edgecolor='white', alpha=0.8)
+    ax.axvline(x=prix_mc, color='red', linestyle='--', label=f'Prix MC ({prix_mc:.2f}$)')
+    ax.set_title('Distribution des Payoffs simulés')
+    ax.set_xlabel('Payoff ($)')
+    ax.set_ylabel('Fréquence (échelle log)')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_yscale('log')
+    plt.tight_layout()
+    plt.show()
+
+def plot_mc_paths(S, K, T, r, sigma):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.set_facecolor('black')
+    fig.patch.set_facecolor('black')
+
+    t_space = np.linspace(0, T, 50)
+    colors = plt.cm.rainbow(np.linspace(0, 1, 200))
+    for i in range(200):
+        z_path = np.cumsum(np.random.standard_normal(50)) * sigma * np.sqrt(T / 50)
+        path = S * np.exp((r - 0.5 * sigma**2) * t_space + z_path)
+        ax.plot(t_space * 365, path, alpha=0.3, linewidth=0.8, color=colors[i])
+
+    ax.axhline(y=K, color='white', linestyle='--', linewidth=1.5, label=f'Strike ({K}$)')
+    ax.set_title('Simulation des chemins du sous-jacent (AAPL)', color='black')
+    ax.set_xlabel('Jours', color='white')
+    ax.set_ylabel('Prix ($)', color='white')
+    ax.tick_params(colors='white', labelcolor='white')
+    ax.spines['bottom'].set_color('white')
+    ax.spines['left'].set_color('white')
+    ax.spines['top'].set_color('white')
+    ax.spines['right'].set_color('white')
+    ax.legend()
+    ax.grid(True, alpha=0.1)
+    ax.set_ylim(S * 0.85, S * 1.15)
+    plt.tight_layout()
+    plt.show()
