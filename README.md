@@ -20,7 +20,7 @@ This project fetches **live market data** for a given ticker (e.g. AAPL), retrie
 BSM and Monte Carlo both price the AAPL call at ~2.26$ vs. a market price of ~2.88$ — a gap of ~22%. This is expected and explained by several factors:
 
 - **Volatility smile** — BSM uses a single IV for all strikes; the market prices each strike differently
-- **Liquidity premium** — market makers charge a spread; `lastPrice` may reflect a trade from hours ago
+- **Liquidity premium** — even using bid/ask midpoint rather than `lastPrice`, a gap remains; this reflects a residual risk premium that BSM cannot capture
 - **Jump risk** — the market prices in the possibility of sudden moves that BSM ignores
 - **Demand for protection** — OTM puts (and by put-call parity, calls) carry a risk premium that BSM does not capture
 
