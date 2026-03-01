@@ -89,7 +89,7 @@ BSM and Monte Carlo both price the AAPL call at ~2.26$ vs. a market price of ~2.
 
 ---
 
-## ⚠️ Model Limitations
+##  Model Limitations
 
 - **Constant volatility** — BSM assumes σ is constant across strikes and time, which the volatility smile directly contradicts
 - **Simplistic volatility smile** — the smile displayed here is derived from yfinance implied volatilities which can be noisy (stale prices, low liquidity on OTM strikes). A proper smile would use bid/ask midpoints and filter illiquid strikes
